@@ -17,3 +17,5 @@ while attempts < mattempts:
         print("wrong.")
 if logon == True:
     print("logged on. number of attempts: ", attempts)
+elif logon == False:
+    print("too many failed attempts. Account Lockout")
