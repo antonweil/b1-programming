@@ -25,7 +25,7 @@ def has_digitcase(password):
        return True
     else:
         return False
-    
+
 #creates check function with special definition. c checks for specials
 def has_special_char(password):
     specials = "!@#$%^&*()-_=+.:;,~'´`˜}{§/|¬”#£ﬁ^\·¯˙˚[]’—÷˛“^°"
@@ -109,7 +109,7 @@ def encouragement(is_valid):
         "That one’s easy to guess",
         "Nope, that password needs work"
     ]
-    #check above called is_valid to decide on a category. then calls random to rancomly print a phrase
+    #check above called is_valid to decide on a category. then calls random to randomly print a phrase
     if is_valid:
         print(random.choice(positive_responses))
     else:

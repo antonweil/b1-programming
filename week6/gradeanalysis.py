@@ -29,5 +29,5 @@ for grade in grades:
     collect[grade] = collect.get(grade, 0) +1
 
 print(collect)
-print(unique)
+print("unique grades: "'[%s]' % ', '.join(map(str, collect)))
 print(stats)
