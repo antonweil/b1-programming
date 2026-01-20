@@ -15,7 +15,6 @@ for i in range (1,6,1):
 
 for record in expense_records:
     category = record[0]
-    print(record[0])
     if category in category_totals:
         category_totals[category] += record[1]
     else:
@@ -28,8 +27,8 @@ for record in expense_records:
 
 expense_sort.sort()
 print(f"total spending: {expense_total}")
-print(f"highest expense: {expense_sort[0]}")
-print(f"lowest expense: {expense_sort[-1]}")
+print(f"lowest expense: {expense_sort[0]}")
+print(f"highest expense: {expense_sort[-1]}")
 print(f"average spending: {expense_total / len(expense_records)}")
 
 print("==unique categories spent on==")
