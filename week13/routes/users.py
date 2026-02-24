@@ -5,33 +5,56 @@ import json
 import os
 #imports from fastAPI, typing, json, os as well as schema
 
-user_file = "users.txt"
+user_file = "users.json"
 router = APIRouter()
 #create router to be accessed later
 
 #will be used to load the data from users.txt to users.db
 def load_data():
     if not os.path.exists(user_file):
-        return []  # Return empty list if file doesn't exist yet
+        return []
+    users = []
     with open(user_file, "r") as f:
-        return json.load(f)
+        for line in f:
+            clean_line = line.strip()
+            if clean_line:
+                users.append(json.loads(clean_line))
+    return users
 
 #will be used to save data into users.txt
 def save_data(data):
-    with open(user_file, "w") as f:
-        json.dump(data, f, indent=4)
+    try:
+        with open(user_file, "w") as f:
+            for entry in data:
+                line = json.dumps(entry)
+            f.write(line + "\n")
+    except Exception as e: 
+        raise HTTPException(status_code=500, detail="Internal server error: Could not save data")
 
 users_db = load_data()
+
+def get_next_id():
+    return len(users_db)+1
 
 #POST API call, responds as User (which is UserBase+ID as objects), then defines create_user method, calling the UserCreate class
 @router.post("/", response_model=User)
 def create_user(user: UserCreate):
     #defines ID as the next in the sequence by checking length (starts with 1)
     #**user.model_dump() creates a new dict based on the input
-    new_user = {"id": len(users_db) + 1, **user.model_dump()}
+    if any(u['email'] == new_user.email for u in users_db):
+        raise HTTPException(status_code=400, detail="Email already registered")
+    new_user = {"id": get_next_id(), **user.model_dump()}
     users_db.append(new_user)
     save_data(users_db)
     return new_user
+
+#searches User by Name, returns all if no name is given
+@router.get("/", response_model=List[User])
+#uses query to look for the given name
+def get_users(name: Optional[str] = Query(None, description="Search users by name")):
+    if name:
+        return [u for u in users_db if name.lower() in u["name"].lower()]
+    return users_db
 
 #requires id
 @router.get("/{user_id}", response_model=User)
@@ -42,14 +65,6 @@ def get_user_by_id(id: int):
         #HTTP exception 404 if user isnt foung
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
-#searches User by Name, returns all if no name is given
-@router.get("/", response_model=List[User])
-#uses query to look for the given name
-def get_users(name: Optional[str] = Query(None, description="Search users by name")):
-    if name:
-        return [u for u in users_db if name.lower() in u["name"].lower()]
-    return users_db
 
 #Update User function, calls UserUpdate
 @router.patch("/{user_id}", response_model=User)
