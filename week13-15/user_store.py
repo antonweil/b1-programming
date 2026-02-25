@@ -2,55 +2,79 @@ import os
 from typing import List, Optional, Dict
 import json
 from fastapi import APIRouter, HTTPException, Query, Response, status
+import sqlite3
 
 
 class UserStore:
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self._users: List[Dict] = self.load()
+    def __init__(self, dbpath):
+        self.dbpath = dbpath
+        self.init_db()
+
+    def init_db(self):
+        with sqlite3.connect(self.dbpath) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            conn.commit()
 
     def __iter__(self):
         return iter(self._users)
 
-    def load(self):
-        if not os.path.exists(self.filepath):
-            return []
-        users = []
-        with open(self.filepath, "r") as f:
-            for line in f:
-                clean_line = line.strip()
-                if clean_line:
-                    users.append(json.loads(clean_line))
-            return users
+    def save(self, userdata: dict):
+        try:
+            with sqlite3.connect(self.dbpath) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.execute("""
+                    INSERT INTO users (name, email, password)
+                    VALUES (?, ?, ?)
+                """, (userdata["name"], userdata["email"], userdata["password"]))
+                conn.commit()
+                new_id = cursor.lastrowid
+            return self.find_by_id(new_id)
+        except sqlite3.IntegrityError as e:
+            if "UNIQUE constraint failed: users.email" in str(e):
+                return "duplicate_email"
+        raise e
 
-    def save(self, users: list):
-        with open(self.filepath, "w") as f:
-            for entry in self:
-                line = json.dumps(entry)
-                f.write(line + "\n")
-        self._users = users
+    def load(self, where_clause: str = "", params: tuple = ()):
+        with sqlite3.connect(self.dbpath) as conn:
+            conn.row_factory = sqlite3.Row
+            query = "SELECT id, name, email, password FROM users"
+            if where_clause:
+                query += f" {where_clause}"
+            cursor = conn.execute(query, params)
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
 
-    def find_by_id(self, user_id):
-        #searches the user_db for u via next search
-        self.load()
-        user = next((u for u in self._users if u["id"] == user_id), None)
-        print(user)
-        return user
-    
-    def update_user(self, user_id, updated_data:dict):
-        users = self.load()
-        index = next((i for i, u in enumerate(users) if u["id"] == user_id), None)
-        if index is None:
-            return None
-        users[index].update(updated_data)
-        self.save(users)
-        return users[index]
-        
+    def find_by_id(self, user_id: int):
+        results = self.load("WHERE id = ?", (user_id,))
+        return results[0] if results else None
+
+    def update_user(self, user_id: int, updated_data: dict):
+        if not updated_data:
+            return self.find_by_id(user_id)
+        set_clause = ", ".join([f"{key} = ?" for key in updated_data.keys()])
+        values = list(updated_data.values())
+        values.append(user_id)
+        try:
+            with sqlite3.connect(self.dbpath) as conn:
+                query = f"UPDATE users SET {set_clause} WHERE id = ?"
+                cursor = conn.execute(query, values)
+                conn.commit()
+                if cursor.rowcount == 0:
+                    return None
+            return self.find_by_id(user_id)
+        except sqlite3.IntegrityError:
+            return "duplicate_email"
+
     def delete_user(self, user_id):
-        users = self.load()
-        original_count = len(users)
-        updated_users = [u for u in users if u["id"] != user_id]
-        if len(updated_users) == original_count:
-            return False
-        self.save(updated_users)
-        return True
+        with sqlite3.connect(self.dbpath) as conn:
+            cursor = conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            conn.commit()
+            return cursor.rowcount > 0
