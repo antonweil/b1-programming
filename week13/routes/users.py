@@ -34,7 +34,10 @@ def save_data(data):
 users_db = load_data()
 
 def get_next_id():
-    return len(users_db)+1
+    if not users_db:
+        return 1
+    #f ind the current highest ID and increment it by 1
+    return max(user['id'] for user in users_db) + 1
 
 #POST API call, responds as User (which is UserBase+ID as objects), then defines create_user method, calling the UserCreate class
 @router.post("/", response_model=User)
@@ -67,7 +70,7 @@ def get_user_by_id(id: int):
     return user
 
 #Update User function, calls UserUpdate
-@router.patch("/{user_id}", response_model=User)
+@router.patch("/{user_id}", response_model=UserUpdate)
 def update_user(user_id: int, user_update: UserUpdate):
     #finds user based on index
     user_idx = next((i for i, u in enumerate(users_db) if u["id"] == user_id), None)
