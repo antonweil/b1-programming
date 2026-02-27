@@ -41,7 +41,7 @@ def get_next_id():
 def create_user(user: UserCreate):
     #defines ID as the next in the sequence by checking length (starts with 1)
     #**user.model_dump() creates a new dict based on the input
-    if any(u['email'] == new_user.email for u in users_db):
+    if any(u['email'] == user.email for u in users_db):
         raise HTTPException(status_code=400, detail="Email already registered")
     new_user = {"id": get_next_id(), **user.model_dump()}
     users_db.append(new_user)
