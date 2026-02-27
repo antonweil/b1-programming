@@ -56,7 +56,7 @@ def update_user(user_id: int, user_update: UserUpdate):
     if not updated_user:
         raise HTTPException(
             status_code=404, 
-            detail=f"User with ID {user_id} not found"
+            detail=f"User with ID {user_id} not found/no changes have been made"
         )
     return updated_user
 
