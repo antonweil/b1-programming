@@ -4,7 +4,7 @@ import os
 
 def reformat_to_web_style(input_file):
     if not os.path.exists(input_file):
-        print(f"Critial Error: The file '{input_file}' does not exist.")
+        print(f"Critial Error: The file '{input_file}' does not exist. Is this the right directory?")
         return
     log_pattern = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}),\d{3} - (WARNING|ERROR) - (.*)')
     ip_pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')

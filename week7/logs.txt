@@ -9,7 +9,7 @@
 2025-11-20 12:01:01,801 - WARNING - Potential SQL injection: 66.92.13.5 -> /search?q=DROP TABLE users;
 2025-11-20 12:01:01,901 - WARNING - Forbidden access attempt: 212.88.99.18 -> /admin/config
 2025-11-20 12:01:02,001 - WARNING - Brute force attempt from 172.20.10.5 - 3 failed attempts
-2025-11-20 12:01:02,102 - WARNING - Forbidden access attempt: 8.8.8.8 -> /private
+2025-11-20 12:01:02,102 - WANING - Forbidden access attempt: 8.8.8.8 -> /private
 2025-11-20 12:01:02,203 - WARNING - Potential SQL injection: 77.54.33.10 -> /login?password=admin;--
 2025-11-20 12:01:02,304 - WARNING - Brute force attempt from 172.20.10.5 - 4 failed attempts
 2025-11-20 12:01:02,405 - WARNING - Forbidden access attempt: 145.33.76.22 -> /hidden

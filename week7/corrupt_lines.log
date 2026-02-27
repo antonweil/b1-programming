@@ -1,0 +1,3 @@
+Line 1 (MALFORMED): 2025-11-20 12:01:01,112 - INFO - Starting analysis of server.log
+Line 12 (MALFORMED): 2025-11-20 12:01:02,102 - WANING - Forbidden access attempt: 8.8.8.8 -> /private
+Line 68 (MALFORMED): 2025-11-20 12:01:07,758 - INFO - Analysis complete: 250 requests processed
