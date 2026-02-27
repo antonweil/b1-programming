@@ -12,7 +12,9 @@ router = APIRouter()
 store = UserStore("users.jsonl")
 
 def get_next_id():
-    return len(store.load())+1
+    if not store._users:
+        return 1
+    return max(user['id'] for user in store._users) + 1
 
 #POST API call, responds as User (which is UserBase+ID as objects), then defines create_user method, calling the UserCreate class
 @router.post("/", response_model=User)
